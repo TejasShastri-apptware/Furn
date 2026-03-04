@@ -18,8 +18,6 @@ exports.createOrder = async (userId, items) => {
             const itemPrice = product.price - product.discount;
             totalAmount += itemPrice * item.quantity;
         }
-
-        //insertion
         const [orderRes] = await connection.query(
             "INSERT INTO user_order (user_id, total, status) VALUES (?, ?, 'PENDING')",
             [userId, totalAmount]
