@@ -1,0 +1,46 @@
+const pool = require("../config/db");
+
+exports.createOrganization = async(req, res) => {
+    try {
+        const {org_name, org_contact, org_email} = req.body;
+
+        const [result] = await pool.query(
+            "INSERT INTO organization (org_name, org_contact, org_email) VALUES (?, ?, ?)",
+            [org_name, org_contact, org_email]
+        );
+
+        res.status(201).json({
+            org_id: result.insertId,
+            org_name,
+            org_contact,
+            org_email
+        });
+    } catch(e) {
+        console.error("Error in createOrganization:", e);
+        res.status(500).json({ message: "Error creating org" });
+    }
+}
+
+
+exports.getAllOrganizations = async(req, res) => {
+    try {
+        const [rows] = await pool.query("SELECT * FROM organization");
+        res.json(rows);
+    } catch(e) {
+        console.error("Error in getAllOrganizations:", e);
+        res.status(500).json({ message: "Error getting all orgs" });
+    }
+}
+
+
+exports.getOrganizationById = async(req, res) => {
+    try {
+        const {id} = req.params;
+        const [rows] = await pool.query("SELECT * FROM organization WHERE org_id = ?", [id]);
+        if(rows.length === 0) return res.status(404).json({ message: "Org not found" });
+        res.json(rows[0]);
+    } catch(e) {
+        console.error("Error in getOrganizationById:", e);
+        res.status(500).json({ message: "Error getting org by id" });
+    }
+}
