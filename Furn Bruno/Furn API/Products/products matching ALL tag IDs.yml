@@ -1,0 +1,22 @@
+info:
+  name: products matching ALL tag IDs
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: http://localhost:5000/api/products/tags?tags=1,2
+  headers:
+    - name: x-org-id
+      value: "1"
+  params:
+    - name: tags
+      value: 1,2
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

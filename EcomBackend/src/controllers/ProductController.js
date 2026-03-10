@@ -53,31 +53,31 @@ exports.getAllProductsUnderOrg = async (req, res) => {
   }
 };
 
-exports.getProductByIdUnderOrd = async(req, res) => {
+exports.getProductByIdUnderOrg = async (req, res) => {
   try {
-    const {id} = req.params;
+    const { id } = req.params;
     const orgId = req.org_id;
     const [rows] = await pool.query(
       "SELECT * from products WHERE product_id = ? AND org_id = ?", [id, orgId]
-    )
-    if(rows.length === 0) return res.status(400).json({message: "Product Not Found"});
+    );
+    if (rows.length === 0) return res.status(404).json({ message: "Product Not Found" });
     res.json(rows[0]);
-  } catch(e) {
+  } catch (e) {
     console.error("Error getting product by ID under org : ", id, " ", orgId);
-    res.status(500).json({message: "Error getting product by ID under org"});
+    res.status(500).json({ message: "Error getting product by ID under org" });
   }
 }
 
-exports.getProductByTags = async(req,res) => {
+exports.getProductByTags = async (req, res) => {
   try {
     const orgId = req.org_id;
-  const tagIds = req.query.tags ? req.query.tags.split(',').map(Number) : [];
+    const tagIds = req.query.tags ? req.query.tags.split(',').map(Number) : [];
 
-  if(tagIds.length === 0) return res.status(400).json({message: "No Tags provided for filtering"});
+    if (tagIds.length === 0) return res.status(400).json({ message: "No Tags provided for filtering" });
 
-  // FLOW : Join with protags -> filter by org_id -> group by Product id -> use having count
-  const [rows] = await pool.query(
-    `
+    // FLOW : Join with protags -> filter by org_id -> group by Product id -> use having count
+    const [rows] = await pool.query(
+      `
     Select p.product_id, p.name, p.price, p.image_url, c.category_name,
     GROUP_CONCAT(t.tag_name) AS tags
     FROM products p
@@ -90,11 +90,12 @@ exports.getProductByTags = async(req,res) => {
     HAVING COUNT(distinct pt.tag_id) = ?
     ORDER BY  p.created_at DESC
     `, [orgId, tagIds, tagIds.length]
-  ); //GDamn
+    ); //GDamn
 
-  res.json(rows);
-  } catch(e) {
-    console.error(`Issue fetching product by tags : ${tagIds}`)
+    res.json(rows);
+  } catch (e) {
+    console.error(`Issue fetching product by tags : ${tagIds}`, e);
+    res.status(500).json({ message: "Error fetching products by tags" });
   }
 }
 
@@ -102,23 +103,23 @@ exports.getProductByTags = async(req,res) => {
 exports.createProduct = async (req, res) => {
   try {
     const orgId = req.org_id;
-    const { 
-      category_id, name, description, image_url, 
-      price, discount_price, material, color, length, width, height, stock_quantity 
+    const {
+      category_id, name, description, image_url,
+      price, discount_price, material, color, length, width, height, stock_quantity
     } = req.body;
 
-    const [catCheck] = await pool.query (
+    const [catCheck] = await pool.query(
       "SELECT category_id FROM categories WHERE category_id = ? AND org_id = ?",
       [category_id, orgId]
     );
-    if(catCheck.length === 0) return res.status(400).json({message: "Category invalid for this organization"});
+    if (catCheck.length === 0) return res.status(400).json({ message: "Category invalid for this organization" });
 
     const [result] = await pool.query(
-            `INSERT INTO products 
+      `INSERT INTO products 
             (org_id, category_id, name, description, price, discount_price, material, color, length, width, height, stock_quantity) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [orgId, category_id, name, description, price, discount_price, material, color, length, width, height, stock_quantity]
-        );
+      [orgId, category_id, name, description, price, discount_price, material, color, length, width, height, stock_quantity]
+    );
 
     res.status(201).json({
       product_id: result.insertId,
@@ -132,57 +133,57 @@ exports.createProduct = async (req, res) => {
 };
 
 exports.createProductWithTags = async (req, res) => {
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
 
-        const orgId = req.org_id;
-        const { 
-            category_id, name, description, price, discount_price, 
-            material, color, length, width, height, 
-            stock_quantity, tag_ids 
-        } = req.body;
+    const orgId = req.org_id;
+    const {
+      category_id, name, description, price, discount_price,
+      material, color, length, width, height,
+      stock_quantity, tag_ids
+    } = req.body;
 
-        const [catCheck] = await connection.query(
-            "SELECT category_id FROM categories WHERE category_id = ? AND org_id = ?",
-            [category_id, orgId]
-        );
-        if (catCheck.length === 0) throw new Error("Invalid category for this organization");
+    const [catCheck] = await connection.query(
+      "SELECT category_id FROM categories WHERE category_id = ? AND org_id = ?",
+      [category_id, orgId]
+    );
+    if (catCheck.length === 0) throw new Error("Invalid category for this organization");
 
-        const [productResult] = await connection.query(
-            `INSERT INTO products 
+    const [productResult] = await connection.query(
+      `INSERT INTO products 
             (org_id, category_id, name, description, price, discount_price, material, color, length, width, height, stock_quantity) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [orgId, category_id, name, description, price, discount_price, material, color, length, width, height, stock_quantity]
-        );
-        const productId = productResult.insertId;
+      [orgId, category_id, name, description, price, discount_price, material, color, length, width, height, stock_quantity]
+    );
+    const productId = productResult.insertId;
 
-        if (tag_ids && tag_ids.length > 0) {
-            const [validTags] = await connection.query(
-                "SELECT tag_id FROM tags WHERE tag_id IN (?) AND org_id = ?",
-                [tag_ids, orgId]
-            );
+    if (tag_ids && tag_ids.length > 0) {
+      const [validTags] = await connection.query(
+        "SELECT tag_id FROM tags WHERE tag_id IN (?) AND org_id = ?",
+        [tag_ids, orgId]
+      );
 
-            if (validTags.length !== tag_ids.length) {
-                throw new Error("One or more Tag IDs are invalid or belong to another organization");
-            }
+      if (validTags.length !== tag_ids.length) {
+        throw new Error("One or more Tag IDs are invalid or belong to another organization");
+      }
 
-            const tagRows = validTags.map(t => [productId, t.tag_id]);
-            await connection.query(
-                "INSERT INTO product_tags (product_id, tag_id) VALUES ?",
-                [tagRows]
-            );
-        }
-
-        await connection.commit();
-        res.status(201).json({ product_id: productId, message: "Product and tags created successfully" });
-
-    } catch (error) {
-        await connection.rollback();
-        res.status(400).json({ message: error.message || "Failed to create product" });
-    } finally {
-        connection.release();
+      const tagRows = validTags.map(t => [productId, t.tag_id]);
+      await connection.query(
+        "INSERT INTO product_tags (product_id, tag_id) VALUES ?",
+        [tagRows]
+      );
     }
+
+    await connection.commit();
+    res.status(201).json({ product_id: productId, message: "Product and tags created successfully" });
+
+  } catch (error) {
+    await connection.rollback();
+    res.status(400).json({ message: error.message || "Failed to create product" });
+  } finally {
+    connection.release();
+  }
 };
 
 
@@ -208,10 +209,10 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
-exports.deleteProduct = async(req, res) => {
+exports.deleteProduct = async (req, res) => {
   try {
     const orgId = req.org_id;
-    const {id} = req.params;
+    const { id } = req.params;
     // soft deletion seems to be the way for now.
     // Order items depends on this, history fetching will break if I clean delete a product
     const [result] = await pool.query(
@@ -219,66 +220,148 @@ exports.deleteProduct = async(req, res) => {
       [id, orgId]
     );
 
-    if(result.affectedRows === 0) return res.status(404).json({message: "Product not found, delete Product Endpoint"});
-    res.status(200).json({message: `Product ${id} deleted(soft) under org ${orgId}.`});
-  } catch(e) {
+    if (result.affectedRows === 0) return res.status(404).json({ message: "Product not found, delete Product Endpoint" });
+    res.status(200).json({ message: `Product ${id} deleted(soft) under org ${orgId}.` });
+  } catch (e) {
     console.error("Error deleting PiD: ", e);
-    res.status(500).json({message: "Could not soft delete the product"});
+    res.status(500).json({ message: "Could not soft delete the product" });
   }
 }
 
 
-exports.updateStock = async(req, res) => {
+exports.updateStock = async (req, res) => {
   try {
-    const {id} = req.params;
-    const {quantity} = req.body;
+    const { id } = req.params;
+    const { quantity } = req.body;
+    const orgId = req.org_id;
 
-    const [result] = await pool.query (
-      "UPDATE products SET stock_quantity = ? WHERE product_id = ?", [quantity, id]
+    const [result] = await pool.query(
+      "UPDATE products SET stock_quantity = ? WHERE product_id = ? AND org_id = ?", [quantity, id, orgId]
     );
-    if(result.affectedRows === 0) return res.status(404).json({message: "Product not found, update Endpoint"});
-    res.status(200).json({message: `Stock updated for product ${id} ; New Stock : ${quantity}`});
-  } catch(e) {
+    if (result.affectedRows === 0) return res.status(404).json({ message: "Product not found, update Endpoint" });
+    res.status(200).json({ message: `Stock updated for product ${id} ; New Stock : ${quantity}` });
+  } catch (e) {
     console.error("Error updating stock: ", e);
-    res.status(500).json({message: "Could not update stock"});
+    res.status(500).json({ message: "Could not update stock" });
   }
 }
 
 
 
 // Search, Filter and other queries to be done here:
-exports.searchProduct = async(req, res) => {
-    try {
-        const orgId = req.org_id;
-        const {keyword, category_id, min_price, max_price} = req.query;
+exports.searchProduct = async (req, res) => {
+  try {
+    const orgId = req.org_id;
+    const { keyword, category_id, min_price, max_price } = req.query;
 
-        let query = "SELECT * FROM products WHERE org_id = ? AND is_active = TRUE";
-        let params = [orgId];
+    let query = "SELECT * FROM products WHERE org_id = ? AND is_active = TRUE";
+    let params = [orgId];
 
-        if(keyword) {
-            query += " AND (name like ? OR description LIKE ?)";
-            params.push(`%${keyword}%`, `%${keyword}%`);
-        }
-
-        if(category_id) {
-            query += " AND category_id = ?";
-            params.push(category_id);
-        }
-
-        if(min_price) {
-            query += " AND price >= ?";
-            params.push(min_price);
-        }
-
-        if(max_price) {
-            query += " AND price <= ?";
-            params.push(max_price);
-        }
-
-        const [rows] = await pool.query(query, params);
-        res.json(rows);
-    } catch(e) {
-        console.error("Error searching products: ", e);
-        res.status(500).json({message: "Error searching products, ProductController -> searchProduct"});
+    if (keyword) {
+      query += " AND (name like ? OR description LIKE ?)";
+      params.push(`%${keyword}%`, `%${keyword}%`);
     }
+
+    if (category_id) {
+      query += " AND category_id = ?";
+      params.push(category_id);
+    }
+
+    if (min_price) {
+      query += " AND price >= ?";
+      params.push(min_price);
+    }
+
+    if (max_price) {
+      query += " AND price <= ?";
+      params.push(max_price);
+    }
+
+    const [rows] = await pool.query(query, params);
+    res.json(rows);
+  } catch (e) {
+    console.error("Error searching products: ", e);
+    res.status(500).json({ message: "Error searching products, ProductController -> searchProduct" });
+  }
 }
+
+// Get tags for a specific product
+exports.getProductTags = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const orgId = req.org_id;
+
+    const [rows] = await pool.query(`
+      SELECT t.* 
+      FROM tags t
+      JOIN product_tags pt ON t.tag_id = pt.tag_id
+      JOIN products p ON pt.product_id = p.product_id
+      WHERE p.product_id = ? AND p.org_id = ?
+    `, [id, orgId]);
+
+    res.json(rows);
+  } catch (error) {
+    console.error("Error in getProductTags:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Add a tag to a product
+exports.addTagToProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { tag_id } = req.body;
+    const orgId = req.org_id;
+
+    // Verify product belongs to org
+    const [productCheck] = await pool.query(
+      "SELECT product_id FROM products WHERE product_id = ? AND org_id = ?",
+      [id, orgId]
+    );
+    if (productCheck.length === 0) return res.status(404).json({ message: "Product not found in this organization" });
+
+    // Verify tag belongs to org
+    const [tagCheck] = await pool.query(
+      "SELECT tag_id FROM tags WHERE tag_id = ? AND org_id = ?",
+      [tag_id, orgId]
+    );
+    if (tagCheck.length === 0) return res.status(400).json({ message: "Tag not found in this organization" });
+
+    await pool.query(
+      "INSERT IGNORE INTO product_tags (product_id, tag_id) VALUES (?, ?)",
+      [id, tag_id]
+    );
+
+    res.status(201).json({ message: "Tag added to product successfully" });
+  } catch (error) {
+    console.error("Error in addTagToProduct:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Remove a tag from a product
+exports.removeTagFromProduct = async (req, res) => {
+  try {
+    const { id, tag_id } = req.params;
+    const orgId = req.org_id;
+
+    // Verify product belongs to org (implicit auth check)
+    const [productCheck] = await pool.query(
+      "SELECT product_id FROM products WHERE product_id = ? AND org_id = ?",
+      [id, orgId]
+    );
+    if (productCheck.length === 0) return res.status(404).json({ message: "Product not found in this organization" });
+
+    const [result] = await pool.query(
+      "DELETE FROM product_tags WHERE product_id = ? AND tag_id = ?",
+      [id, tag_id]
+    );
+
+    if (result.affectedRows === 0) return res.status(404).json({ message: "Tag is not associated with this product" });
+
+    res.json({ message: "Tag removed from product successfully" });
+  } catch (error) {
+    console.error("Error in removeTagFromProduct:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

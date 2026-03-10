@@ -1,0 +1,21 @@
+info:
+  name: Delete User
+  type: http
+  seq: 6
+
+http:
+  method: DELETE
+  url: http://localhost:5000/api/users/org/1
+  headers:
+    - name: x-org-id
+      value: "1"
+    - name: USERID is param
+      value: ""
+      disabled: true
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

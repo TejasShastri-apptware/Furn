@@ -1,0 +1,27 @@
+info:
+  name: Place order
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:5000/api/orders/place
+  headers:
+    - name: x-org-id
+      value: "5"
+    - name: x-user-id
+      value: "7"
+  body:
+    type: json
+    data: |-
+      {
+        "shipping_address_id": 1,
+        "payment_id": "PAY_TEST_001"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

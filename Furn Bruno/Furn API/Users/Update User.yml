@@ -1,0 +1,23 @@
+info:
+  name: Update User
+  type: http
+  seq: 3
+
+http:
+  method: PUT
+  url: http://localhost:5000/api/users/org/
+  headers:
+    - name: x-org-id
+      value: "5"
+  params:
+    - name: x-org-id
+      value: ""
+      type: query
+      disabled: true
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,28 @@
+info:
+  name: Create User
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://localhost:5000/api/users/register
+  headers:
+    - name: x-org-id
+      value: "5"
+  body:
+    type: json
+    data: |-
+      {
+        "full_name": "another t",
+        "email": "OT@examples.com",
+        "password_hash": "hashed_password_string",
+        "phone": "9876543210",
+        "role_id": 2
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

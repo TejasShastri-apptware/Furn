@@ -8,13 +8,13 @@ exports.placeOrder = async (req, res) => {
         const orgId = req.org_id;
         const userId = req.user_id;
         const { shipping_address_id, payment_id } = req.body;
-        
+
         // Restriction : User and Org
         const [cartItems] = await connection.query(
             `SELECT c.product_id, c.quantity, p.price, p.stock_quantity
              FROM cart_items c
              JOIN products p ON c.product_id = p.product_id
-             WHERE c.user_id = ? AND c.org_id = ?`, 
+             WHERE c.user_id = ? AND c.org_id = ?`,
             [userId, orgId]
         );
 
@@ -28,7 +28,7 @@ exports.placeOrder = async (req, res) => {
             }
             totalAmount += item.price * item.quantity;
         }
-        
+
         // Insert Order with shipping_address_id
         const [orderResult] = await connection.query(
             `INSERT INTO orders (user_id, org_id, total_amount, payment_id, shipping_address_id, order_status) 
@@ -82,27 +82,26 @@ exports.getUserOrdersByOrg = async (req, res) => {
 };
 
 // Global
-exports.getAllOrders = async(req, res) => {
+exports.getAllOrders = async (req, res) => {
     try {
-        const {user_id} = req.params;
         const [orders] = await pool.query(
             `SELECT * from orders ORDER BY created_at DESC`
         );
         res.json(orders);
-    } catch(error) {
-        res.status(500).json({message: "Error fetching all orders, OrderController -> getAllOrders"})
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching all orders, OrderController -> getAllOrders" })
     }
 }
 
-exports.getAllOrdersByOrg = async(req,res) => {
+exports.getAllOrdersByOrg = async (req, res) => {
     try {
         const orgId = req.org_id;
         const [orders] = await pool.query(
             `SELECT * from orders WHERE org_id = ? ORDER BY created_at DESC`, [orgId]
         );
         res.json(orders);
-    } catch(error) {
-        res.status(500).json({message: "Error fetching all orders by org, OrderController -> getAllOrdersByOrg"})
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching all orders by org, OrderController -> getAllOrdersByOrg" })
     }
 }
 
@@ -117,7 +116,10 @@ exports.getDetailedOrdersByUser = async (req, res) => {
                 o.user_id,
                 o.total_amount,
                 o.order_status,
-                o.shipping_address,
+                a.address_line1,
+                a.city,
+                a.postal_code,
+                a.country,
                 o.created_at,
                 oi.product_id,
                 p.name AS product_name,
@@ -125,14 +127,15 @@ exports.getDetailedOrdersByUser = async (req, res) => {
                 oi.unit_price,
                 oi.subtotal
             FROM orders o
+            LEFT JOIN addresses a ON o.shipping_address_id = a.address_id
             JOIN order_items oi ON o.order_id = oi.order_id
             JOIN products p ON oi.product_id = p.product_id
             WHERE o.user_id = ? AND o.org_id = ?
             ORDER BY o.created_at DESC`,
             [userId, orgId]
-        ); //! This should stay the same I guess
+        );
 
-        res.status(200).json({"orders" : orders});
+        res.status(200).json({ "orders": orders });
 
     } catch (error) {
         console.error("Error fetching user orders:", error);
@@ -145,10 +148,11 @@ exports.getDetailedOrdersByUser = async (req, res) => {
 exports.getOrderById = async (req, res) => {
     try {
         const { order_id } = req.params;
+        const orgId = req.org_id;
 
         const [order] = await pool.query(
-            `SELECT * FROM orders WHERE order_id = ?`,
-            [order_id]
+            `SELECT * FROM orders WHERE order_id = ? AND org_id = ?`,
+            [order_id, orgId]
         );
 
         if (order.length === 0) {

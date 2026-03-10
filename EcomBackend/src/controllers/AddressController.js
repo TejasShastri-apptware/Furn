@@ -6,20 +6,21 @@ exports.addAddress = async (req, res) => {
         await connection.beginTransaction();
 
         const orgId = req.org_id;
-        const { 
-            user_id, address_line1, address_line2, city, 
-            state, postal_code, country, is_default 
+        const userId = req.user_id; // Injected by middleware — never trust body for identity
+        const {
+            address_line1, address_line2, city,
+            state, postal_code, country, is_default
         } = req.body;
 
         if (is_default) {
             await connection.query(
                 "UPDATE addresses SET is_default = FALSE WHERE user_id = ? AND org_id = ?",
-                [user_id, orgId]
+                [userId, orgId]
             );
             const summary = `${address_line1}, ${city}, ${country}`;
             await connection.query(
                 "UPDATE users SET default_shipping_address = ? WHERE user_id = ? AND org_id = ?",
-                [summary, user_id, orgId]
+                [summary, userId, orgId]
             );
         }
 
@@ -27,7 +28,7 @@ exports.addAddress = async (req, res) => {
             `INSERT INTO addresses 
             (org_id, user_id, address_line1, address_line2, city, state, postal_code, country, is_default) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [orgId, user_id, address_line1, address_line2, city, state, postal_code, country, is_default || false]
+            [orgId, userId, address_line1, address_line2, city, state, postal_code, country, is_default || false]
         );
 
         await connection.commit();

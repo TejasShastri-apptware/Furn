@@ -1,0 +1,27 @@
+info:
+  name: Add to cart
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:5000/api/cart/add
+  headers:
+    - name: x-org-id
+      value: "5"
+    - name: x-user-id
+      value: "7"
+  body:
+    type: json
+    data: |-
+      {
+        "product_id": 7,
+        "quantity": 2
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

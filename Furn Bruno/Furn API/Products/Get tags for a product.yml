@@ -1,0 +1,18 @@
+info:
+  name: Get tags for a product
+  type: http
+  seq: 11
+
+http:
+  method: GET
+  url: http://localhost:5000/api/products/3/tags
+  headers:
+    - name: x-org-id
+      value: "1"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

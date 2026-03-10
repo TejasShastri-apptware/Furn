@@ -1,0 +1,25 @@
+info:
+  name: Price filter
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: http://localhost:5000/api/products/search?min_price=20000&max_price=50000
+  headers:
+    - name: x-org-id
+      value: "1"
+  params:
+    - name: min_price
+      value: "20000"
+      type: query
+    - name: max_price
+      value: "50000"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,23 +1,18 @@
 const express = require("express");
 const router = express.Router();
 const orderController = require("../controllers/OrderController");
+const injectContext = require("../middleware/injectContext");
 
-const injectContext = (req, res, next) => {
-    req.org_id = req.headers['x-org-id'] || req.body.org_id;
-    req.user_id = req.headers['x-user-id'] || req.body.user_id;
-    next();
-};
-
-// Tenant Scoped
+// Tenant + user scoped
 router.post("/place", injectContext, orderController.placeOrder);
 router.get("/my-history", injectContext, orderController.getUserOrdersByOrg);
 router.get("/my-detailed-history", injectContext, orderController.getDetailedOrdersByUser);
 router.get("/details/:order_id", injectContext, orderController.getDetailedOrderById);
 
-// Admin Scoped
+// Admin scoped (org only)
 router.get("/org-all", injectContext, orderController.getAllOrdersByOrg);
 
-// Global Scoped
+// Global
 router.get("/global-all", orderController.getAllOrders);
 
 module.exports = router;

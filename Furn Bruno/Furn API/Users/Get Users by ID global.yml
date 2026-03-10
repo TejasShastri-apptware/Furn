@@ -1,0 +1,15 @@
+info:
+  name: Get Users by ID global
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: http://localhost:5000/api/users/global/5
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

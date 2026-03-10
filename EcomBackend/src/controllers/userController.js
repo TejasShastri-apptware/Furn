@@ -5,7 +5,7 @@ exports.getAllUsersUnderOrg = async (req, res) => {
     try {
         const orgId = req.org_id;
         const [rows] = await pool.query(`
-            SELECT u.user_id, u.full_name, u.email, u.phone, u.default_shipping_address, r.role_name, u.created_at 
+            SELECT u.user_id, u.full_name, u.email, u.phone, u.default_shipping_address, r.role_name, u.created_at, u.org_id 
             FROM users u
             JOIN roles r ON u.role_id = r.role_id
             WHERE u.org_id = ?`, 
@@ -21,9 +21,10 @@ exports.getAllUsersUnderOrg = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT u.user_id, u.full_name, u.email, u.phone, u.default_shipping_address, r.role_name, u.created_at 
+      SELECT u.user_id, u.full_name, u.email, u.phone, u.default_shipping_address, r.role_name, u.created_at, u.org_id 
       FROM users u
       JOIN roles r ON u.role_id = r.role_id
+      ORDER BY u.org_id
     `);
     res.json(rows);
   } catch (error) {
@@ -54,7 +55,7 @@ exports.getUserById = async (req, res) => {
   try {
     const { id } = req.params;
     const [rows] = await pool.query(
-      "SELECT user_id, full_name, email, phone, default_shipping_address, role_id FROM users WHERE user_id = ?",
+      "SELECT user_id, full_name, email, phone, default_shipping_address, role_id, org_id FROM users WHERE user_id = ?",
       [id]
     );
 
@@ -116,7 +117,7 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const orgId = req.org_id;
+    const orgId = req.org_id
     const [result] = await pool.query("DELETE FROM users WHERE user_id = ? AND org_id = ?", [id, orgId]);
 
     if (result.affectedRows === 0) return res.status(404).json({ message: "User not found" });

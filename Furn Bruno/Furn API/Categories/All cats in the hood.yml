@@ -1,0 +1,18 @@
+info:
+  name: All cats in the hood
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://localhost:5000/api/categories
+  headers:
+    - name: x-org-id
+      value: "5"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

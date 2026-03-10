@@ -1,17 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const CategoryController = require("../controllers/CategoryController");
+const injectContext = require("../middleware/injectContext");
 
-const injectOrg = (req, res, next) => {
-    req.org_id = req.headers['x-org-id'] || req.body.org_id;
-    next();
-};
-
-// Scoped Tenant
-router.post("/", injectOrg, CategoryController.createCat);
-router.get("/", injectOrg, CategoryController.getAllCategories);
-router.get("/:id", injectOrg, CategoryController.getCategoryById);
-router.put("/:id", injectOrg, CategoryController.updateCategory);
-router.delete("/:id", injectOrg, CategoryController.deleteCategory);
+// Tenant scoped
+router.post("/", injectContext, CategoryController.createCat);
+router.get("/", injectContext, CategoryController.getAllCategories);
+router.get("/:id", injectContext, CategoryController.getCategoryById);
+router.put("/:id", injectContext, CategoryController.updateCategory);
+router.delete("/:id", injectContext, CategoryController.deleteCategory);
 
 module.exports = router;

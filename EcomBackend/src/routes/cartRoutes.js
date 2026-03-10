@@ -1,13 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const cartController = require("../controllers/CartController");
-
-const injectContext = (req, res, next) => {
-    // Priority: Header > Body
-    req.org_id = req.headers['x-org-id'] || req.body.org_id;
-    req.user_id = req.headers['x-user-id'] || req.body.user_id;
-    next();
-};
+const injectContext = require("../middleware/injectContext");
 
 // Scope - organization and user
 router.get("/", injectContext, cartController.getCart);

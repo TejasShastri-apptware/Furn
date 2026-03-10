@@ -1,0 +1,25 @@
+info:
+  name: Create a tag
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: http://localhost:5000/api/tags
+  headers:
+    - name: x-org-id
+      value: "1"
+  body:
+    type: json
+    data: |
+      {
+          "tag_name": "STORAGE ROOM",
+          "tag_type": "room"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
