@@ -7,7 +7,7 @@ export default function Footer() {
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
                     <div className="space-y-6">
-                        <Link to="/" className="text-2xl font-serif font-black tracking-tighter text-stone-900">
+                        <Link to="/store" className="text-2xl font-serif font-black tracking-tighter text-stone-900">
                             FURN
                         </Link>
                         <p className="max-w-xs text-sm leading-relaxed text-stone-500">
@@ -23,7 +23,7 @@ export default function Footer() {
                     <div>
                         <h4 className="mb-6 text-xs font-bold uppercase tracking-widest text-stone-900">Shop</h4>
                         <ul className="space-y-4 text-sm text-stone-500">
-                            <li><Link to="/products" className="hover:text-stone-900 transition-colors">All Collections</Link></li>
+                            <li><Link to="/store/products" className="hover:text-stone-900 transition-colors">All Collections</Link></li>
                         </ul>
                     </div>
 

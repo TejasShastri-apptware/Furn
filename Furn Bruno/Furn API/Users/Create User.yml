@@ -4,20 +4,20 @@ info:
   seq: 1
 
 http:
-  method: GET
+  method: POST
   url: http://localhost:5000/api/users/register
   headers:
     - name: x-org-id
-      value: "5"
+      value: "6"
   body:
     type: json
     data: |-
       {
-        "full_name": "another t",
-        "email": "OT@examples.com",
-        "password_hash": "hashed_password_string",
+        "full_name": "customer",
+        "email": "customer@furn.com",
+        "password_hash": "pwordpword",
         "phone": "9876543210",
-        "role_id": 2
+        "role_id": 3
       }
   auth: inherit
 

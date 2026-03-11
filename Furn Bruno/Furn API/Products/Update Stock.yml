@@ -5,15 +5,15 @@ info:
 
 http:
   method: PUT
-  url: http://localhost:5000/api/products/updateStock/1
+  url: http://localhost:5000/api/products/updateStock/7
   headers:
     - name: x-org-id
-      value: "1"
+      value: "5"
   body:
     type: json
     data: |-
       {
-        "quantity" : 100
+        "price" : "20000.0"
       }
   auth: inherit
 

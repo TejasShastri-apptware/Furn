@@ -1,14 +1,21 @@
 info:
-  name: All cats in the hood
+  name: Create a cat
   type: http
-  seq: 1
+  seq: 4
 
 http:
-  method: GET
+  method: POST
   url: http://localhost:5000/api/categories
   headers:
     - name: x-org-id
       value: "6"
+  body:
+    type: json
+    data: |-
+      {
+        "category_name" : "some cat",
+        "description" : "Think he big now"
+      }
   auth: inherit
 
 settings:

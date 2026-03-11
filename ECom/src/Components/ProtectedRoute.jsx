@@ -1,0 +1,28 @@
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+/**
+ * Wraps any route that requires the user to be signed in.
+ * If not authenticated → redirect to /signin.
+ * If authenticated but not an admin (and adminOnly is set) → redirect to /.
+ */
+export default function ProtectedRoute({ children, adminOnly = false }) {
+    const { user, isAdmin, orgLoading } = useAuth();
+
+    // Wait for org resolution before making auth decisions
+    if (orgLoading) {
+        return (
+            <div className="min-h-screen bg-stone-950 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-amber-400" />
+                    <p className="text-sm text-stone-500">Loading…</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!user) return <Navigate to="/signin" replace />;
+    if (adminOnly && !isAdmin) return <Navigate to="/store" replace />;
+
+    return children;
+}

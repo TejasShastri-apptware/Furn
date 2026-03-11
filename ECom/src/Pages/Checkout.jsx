@@ -31,7 +31,7 @@ export default function Checkout() {
                     <p className="mt-4 text-stone-500">Thank you for choosing Furni. Your artisanal pieces are being prepared.</p>
                 </div>
                 <Link
-                    to="/"
+                    to="/store"
                     className="inline-flex items-center space-x-2 rounded-full bg-stone-900 px-10 py-4 text-sm font-bold text-white transition-all hover:bg-stone-800 active:scale-95"
                 >
                     <span>Return Home</span>
@@ -45,7 +45,7 @@ export default function Checkout() {
         return (
             <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
                 <h2 className="text-2xl font-serif text-stone-900">Your bag is empty</h2>
-                <Link to="/products" className="mt-4 text-stone-500 underline underline-offset-4">Return to collection</Link>
+                <Link to="/store/products" className="mt-4 text-stone-500 underline underline-offset-4">Return to collection</Link>
             </div>
         );
     }

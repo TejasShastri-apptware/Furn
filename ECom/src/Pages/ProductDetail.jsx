@@ -14,7 +14,7 @@ export default function ProductDetail() {
         return (
             <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
                 <h2 className="text-2xl font-serif font-black text-stone-900">Piece not found</h2>
-                <Link to="/products" className="mt-4 text-stone-500 underline underline-offset-4">Return to collection</Link>
+                <Link to="/store/products" className="mt-4 text-stone-500 underline underline-offset-4">Return to collection</Link>
             </div>
         );
     }
@@ -25,7 +25,7 @@ export default function ProductDetail() {
 
     return (
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-            <Link to="/products" className="mb-12 inline-flex items-center space-x-2 text-sm font-bold uppercase tracking-widest text-stone-400 transition-colors hover:text-stone-900">
+            <Link to="/store/products" className="mb-12 inline-flex items-center space-x-2 text-sm font-bold uppercase tracking-widest text-stone-400 transition-colors hover:text-stone-900">
                 <ChevronLeft size={16} />
                 <span>Back to collection</span>
             </Link>

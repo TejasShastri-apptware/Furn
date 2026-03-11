@@ -26,7 +26,7 @@ export default function Home() {
                         </p>
                         <div className="flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-6 sm:space-y-0">
                             <Link
-                                to="/products"
+                                to="/store/products"
                                 className="inline-flex items-center space-x-2 rounded-full bg-white px-8 py-4 text-sm font-bold text-stone-900 transition-all hover:bg-stone-100 active:scale-95"
                             >
                                 <span>Shop Collection</span>
@@ -50,7 +50,7 @@ export default function Home() {
                         <h2 className="text-3xl font-serif font-black tracking-tighter text-stone-900">Featured Pieces</h2>
                         <p className="mt-2 text-stone-500">Selected for their exceptional design and craftsmanship.</p>
                     </div>
-                    <Link to="/products" className="group flex items-center space-x-2 text-sm font-bold uppercase tracking-widest text-stone-900">
+                    <Link to="/store/products" className="group flex items-center space-x-2 text-sm font-bold uppercase tracking-widest text-stone-900">
                         <span>View All</span>
                         <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
                     </Link>

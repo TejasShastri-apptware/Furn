@@ -8,9 +8,9 @@ http:
   url: http://localhost:5000/api/cart
   headers:
     - name: x-org-id
-      value: "5"
+      value: "6"
     - name: x-user-id
-      value: "7"
+      value: "17"
   auth: inherit
 
 settings:

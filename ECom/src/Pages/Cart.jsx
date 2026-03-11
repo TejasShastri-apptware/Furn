@@ -16,7 +16,7 @@ export default function Cart() {
                     <p className="mt-4 text-stone-500">Looks like you haven't added any yet.</p>
                 </div>
                 <Link
-                    to="/products"
+                    to="/store/products"
                     className="inline-flex items-center space-x-2 rounded-full bg-stone-900 px-10 py-4 text-sm font-bold text-white transition-all hover:bg-stone-800 active:scale-95"
                 >
                     <span>Explore Collection</span>

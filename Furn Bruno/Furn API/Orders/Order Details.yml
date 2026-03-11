@@ -5,10 +5,10 @@ info:
 
 http:
   method: GET
-  url: http://localhost:5000/api/orders/details/3
+  url: http://localhost:5000/api/orders/details/5
   headers:
     - name: x-org-id
-      value: "5"
+      value: "6"
   auth: inherit
 
 settings:

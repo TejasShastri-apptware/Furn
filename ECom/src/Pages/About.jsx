@@ -15,7 +15,7 @@ export default function About() {
                         We are also committed to giving back. That's why 2% of our profits support a marine conservation initiative founded by our CEO ensuring that future generations can continue appreciating majestic wildlife from a safe distance from their yacht.
                     </p>
                     <Link
-                        to="/products"
+                        to="/store/products"
                         className="mt-12 inline-flex items-center space-x-2 rounded-full bg-stone-900 px-10 py-5 text-sm font-bold text-white transition-all hover:bg-stone-800 active:scale-95"
                     >
                         <span>Explore the Pieces</span>

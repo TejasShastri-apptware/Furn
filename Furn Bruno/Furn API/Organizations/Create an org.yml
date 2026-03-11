@@ -1,0 +1,23 @@
+info:
+  name: Create an org
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: http://localhost:5000/api/orgs
+  body:
+    type: json
+    data: |-
+      {
+        "org_name": "Furn",
+        "org_contact": "9876543210",
+        "org_email": "c@furn.com"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

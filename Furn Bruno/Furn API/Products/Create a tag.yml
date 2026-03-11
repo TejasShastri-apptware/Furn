@@ -8,12 +8,12 @@ http:
   url: http://localhost:5000/api/tags
   headers:
     - name: x-org-id
-      value: "1"
+      value: "6"
   body:
     type: json
     data: |
       {
-          "tag_name": "STORAGE ROOM",
+          "tag_name": "storage tag",
           "tag_type": "room"
       }
   auth: inherit

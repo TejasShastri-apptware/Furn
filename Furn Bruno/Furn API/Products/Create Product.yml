@@ -4,18 +4,18 @@ info:
   seq: 9
 
 http:
-  method: GET
+  method: POST
   url: http://localhost:5000/api/products
   headers:
     - name: x-org-id
-      value: "1"
+      value: "6"
   body:
     type: json
-    data: |
+    data: |-
       {
-        "category_id": 1,
-        "name": "anotherone",
-        "description": "A very comfortable sofa.",
+        "category_id": 8,
+        "name": "ANOTHER cupboard",
+        "description": "ANOTHER comfortable cupboard for U to sleep in",
         "price": 499.99,
         "discount_price": 450.00,
         "material": "Leather",
@@ -24,7 +24,7 @@ http:
         "width": 35.0,
         "height": 40.0,
         "stock_quantity": 10,
-        "tag_ids": [20]
+        "tag_ids": [7]
       }
   auth: inherit
 
