@@ -1,11 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-/**
- * Wraps any route that requires the user to be signed in.
- * If not authenticated → redirect to /signin.
- * If authenticated but not an admin (and adminOnly is set) → redirect to /.
- */
 export default function ProtectedRoute({ children, adminOnly = false }) {
     const { user, isAdmin, orgLoading } = useAuth();
 

@@ -3,6 +3,7 @@ const router = express.Router();
 const userController = require("../controllers/userController");
 const injectContext = require("../middleware/injectContext");
 
+router.post("/login", injectContext, userController.login);
 router.post("/register", injectContext, userController.createUser);
 router.get("/org", injectContext, userController.getAllUsersUnderOrg);
 router.get("/org/:id", injectContext, userController.getUserByIdUnderOrg);

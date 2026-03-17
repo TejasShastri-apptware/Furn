@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: http://localhost:5000/api/users/global/5
+  url: http://localhost:5000/api/users/global/3
   auth: inherit
 
 settings:

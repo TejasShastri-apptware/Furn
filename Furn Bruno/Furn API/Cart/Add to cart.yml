@@ -8,14 +8,14 @@ http:
   url: http://localhost:5000/api/cart/add
   headers:
     - name: x-org-id
-      value: "6"
+      value: "1"
     - name: x-user-id
-      value: "17"
+      value: "3"
   body:
     type: json
     data: |-
       {
-        "product_id": 9,
+        "product_id":3,
         "quantity": 3
       }
   auth: inherit

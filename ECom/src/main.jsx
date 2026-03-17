@@ -19,6 +19,7 @@ import ProductsPage from './Pages/Admin/Products'
 import OrdersPage from './Pages/Admin/Orders'
 import CategoriesPage from './Pages/Admin/Categories'
 import TagsPage from './Pages/Admin/Tags'
+import OrderHistory from './Pages/OrderHistory'
 
 import { CartProvider } from './context/CartContext'
 import { AuthProvider } from './context/AuthContext'
@@ -55,7 +56,6 @@ const router = createBrowserRouter([
     ],
   },
 
-  // Storefront — protected (must be signed in)
   {
     path: '/store',
     element: (
@@ -70,6 +70,7 @@ const router = createBrowserRouter([
       { path: 'products/:id', element: <ProductDetail /> },
       { path: 'cart', element: <Cart /> },
       { path: 'checkout', element: <Checkout /> },
+      { path: 'orders', element: <OrderHistory /> },
     ],
   },
 ])

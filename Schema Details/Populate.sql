@@ -3,9 +3,8 @@ USE furn2;
 INSERT INTO
     roles (role_id, role_name)
 VALUES (1, 'dev'),
-    (2, 'customer'),
-    (3, 'admin'),
-    (4, 'org_admin');
+    (2, 'admin'),
+    (3, 'customer');
 
 INSERT INTO
     organization (

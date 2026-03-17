@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingCart, Search, Menu, LayoutDashboard, LogIn, LogOut } from 'lucide-react';
+import { ShoppingCart, Search, Menu, LayoutDashboard, LogIn, LogOut, ClipboardList } from 'lucide-react';
 
 export default function Navbar() {
     const { cartCount } = useCart();
@@ -24,6 +24,9 @@ export default function Navbar() {
                     <Link to="/store" className="hover:text-stone-900 transition-colors">Home</Link>
                     <Link to="/store/products" className="hover:text-stone-900 transition-colors">Collection</Link>
                     <Link to="/store/about" className="hover:text-stone-900 transition-colors">About</Link>
+                    {user && !isAdmin && (
+                        <Link to="/store/orders" className="hover:text-stone-900 transition-colors">My Orders</Link>
+                    )}
                 </div>
 
                 <div className="flex items-center space-x-4">
@@ -42,13 +45,22 @@ export default function Navbar() {
 
                     {user ? (
                         <div className="flex items-center gap-2">
-                            {isAdmin && (
+                            {isAdmin ? (
                                 <Link
                                     to="/admin"
                                     className="flex items-center gap-1.5 rounded-full border border-stone-200 px-3 py-1.5 text-xs font-semibold text-stone-600 hover:border-stone-900 hover:text-stone-900 transition-all"
                                 >
                                     <LayoutDashboard size={14} />
                                     <span className="hidden sm:inline">Admin</span>
+                                </Link>
+                            ) : (
+                                <Link
+                                    to="/store/orders"
+                                    title="My Orders"
+                                    className="flex items-center gap-1.5 rounded-full border border-stone-200 px-3 py-1.5 text-xs font-semibold text-stone-600 hover:border-stone-900 hover:text-stone-900 transition-all"
+                                >
+                                    <ClipboardList size={14} />
+                                    <span className="hidden sm:inline">My Orders</span>
                                 </Link>
                             )}
                             <button

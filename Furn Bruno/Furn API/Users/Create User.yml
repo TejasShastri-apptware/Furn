@@ -8,16 +8,21 @@ http:
   url: http://localhost:5000/api/users/register
   headers:
     - name: x-org-id
-      value: "6"
+      value: "1"
   body:
     type: json
     data: |-
       {
-        "full_name": "customer",
-        "email": "customer@furn.com",
-        "password_hash": "pwordpword",
+        "full_name": "customer2",
+        "email": "customer2@furn.com",
+        "password_hash": "123123",
         "phone": "9876543210",
-        "role_id": 3
+        "role_id": 3,
+        "address_line1": "customer2 address ",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "postal_code": "400001",
+        "country": "India"
       }
   auth: inherit
 

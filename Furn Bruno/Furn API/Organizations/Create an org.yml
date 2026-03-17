@@ -12,7 +12,7 @@ http:
       {
         "org_name": "Furn",
         "org_contact": "9876543210",
-        "org_email": "c@furn.com"
+        "org_email": "org@furn.com"
       }
   auth: inherit
 

@@ -15,6 +15,7 @@ router.get("/:id", injectContext, productController.getProductByIdUnderOrg);
 router.get("/:id/tags", injectContext, productController.getProductTags);
 
 // Org-scoped management
+router.post("/with-tags", injectContext, productController.createProductWithTags);
 router.post("/", injectContext, productController.createProductWithTags);
 router.put("/updateStock/:id", injectContext, productController.updateStock);
 router.put("/:id", injectContext, productController.updateProduct);

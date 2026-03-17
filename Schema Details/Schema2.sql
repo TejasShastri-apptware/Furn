@@ -110,10 +110,8 @@ CREATE TABLE orders (
     org_id INT NOT NULL,
     order_status ENUM(
         'pending',
-        'paid',
-        'shipped',
-        'cancelled',
-        'refunded'
+        'completed',
+        'cancelled'
     ) DEFAULT 'pending',
     total_amount DECIMAL(10, 2) NOT NULL,
     payment_id VARCHAR(100),

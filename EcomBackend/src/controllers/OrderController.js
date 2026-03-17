@@ -9,18 +9,29 @@ exports.placeOrder = async (req, res) => {
         const userId = req.user_id;
         const { shipping_address_id, payment_id } = req.body;
 
-        // Restriction : User and Org
+        // 1. Address Ownership Check
+        // Ensures the address exists and belongs to the user and organization
+        const [addressRows] = await connection.query(
+            `SELECT address_id FROM addresses 
+             WHERE address_id = ? AND user_id = ? AND org_id = ?`,
+            [shipping_address_id, userId, orgId]
+        );
+
+        if (addressRows.length === 0) {
+            throw new Error("Invalid or unauthorized shipping address.");
+        }
+
+        // 2. Fetch Cart Items with FOR UPDATE to lock rows
         const [cartItems] = await connection.query(
             `SELECT c.product_id, c.quantity, p.price, p.stock_quantity
              FROM cart_items c
              JOIN products p ON c.product_id = p.product_id
-             WHERE c.user_id = ? AND c.org_id = ?`,
+             WHERE c.user_id = ? AND c.org_id = ? FOR UPDATE`,
             [userId, orgId]
         );
 
         if (cartItems.length === 0) throw new Error("Empty Cart");
 
-        // Inventory & Total Calculation
         let totalAmount = 0;
         for (const item of cartItems) {
             if (item.stock_quantity < item.quantity) {
@@ -29,16 +40,16 @@ exports.placeOrder = async (req, res) => {
             totalAmount += item.price * item.quantity;
         }
 
-        // Insert Order with shipping_address_id
+        // 3. Insert Order — status starts as 'pending' (admin must approve)
         const [orderResult] = await connection.query(
             `INSERT INTO orders (user_id, org_id, total_amount, payment_id, shipping_address_id, order_status) 
-             VALUES (?, ?, ?, ?, ?, 'paid')`,
+             VALUES (?, ?, ?, ?, ?, 'pending')`,
             [userId, orgId, totalAmount, payment_id, shipping_address_id]
         );
 
         const orderId = orderResult.insertId;
 
-        //snapshot and deduction & Strict Org Check
+        // 4. Atomic Deductions and Snapshots
         for (const item of cartItems) {
             await connection.query(
                 `INSERT INTO order_items (order_id, product_id, quantity, unit_price) 
@@ -46,14 +57,23 @@ exports.placeOrder = async (req, res) => {
                 [orderId, item.product_id, item.quantity, item.price]
             );
 
-            await connection.query(
+            // Atomic update: only subtract if stock is still sufficient
+            const [updateResult] = await connection.query(
                 `UPDATE products SET stock_quantity = stock_quantity - ? 
-                 WHERE product_id = ? AND org_id = ?`,
-                [item.quantity, item.product_id, orgId]
+                 WHERE product_id = ? AND org_id = ? AND stock_quantity >= ?`,
+                [item.quantity, item.product_id, orgId, item.quantity]
             );
+
+            if (updateResult.affectedRows === 0) {
+                throw new Error(`Concurrency error: Stock changed for product ${item.product_id}`);
+            }
         }
 
-        await connection.query("DELETE FROM cart_items WHERE user_id = ? AND org_id = ?", [userId, orgId]);
+        // 5. Clear Cart
+        await connection.query(
+            "DELETE FROM cart_items WHERE user_id = ? AND org_id = ?", 
+            [userId, orgId]
+        );
 
         await connection.commit();
         res.status(201).json({ order_id: orderId, total_amount: totalAmount });
@@ -212,5 +232,70 @@ exports.getDetailedOrderById = async (req, res) => {
     } catch (e) {
         console.error(e);
         res.status(500).json({ message: "Error fetching order details" });
+    }
+};
+
+// Admin: approve (→ completed) or cancel (→ cancelled) a pending order
+exports.updateOrderStatus = async (req, res) => {
+    const connection = await pool.getConnection();
+    try {
+        const orgId = req.org_id;
+        const { order_id } = req.params;
+        const { status } = req.body;
+
+        // Only these two transitions are allowed
+        const ALLOWED = ['completed', 'cancelled'];
+        if (!ALLOWED.includes(status)) {
+            return res.status(400).json({
+                message: `Invalid status. Allowed values: ${ALLOWED.join(', ')}`
+            });
+        }
+
+        await connection.beginTransaction();
+
+        // Lock the row and confirm it belongs to this org and is still pending
+        const [rows] = await connection.query(
+            `SELECT order_id, order_status FROM orders
+             WHERE order_id = ? AND org_id = ? FOR UPDATE`,
+            [order_id, orgId]
+        );
+
+        if (rows.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ message: 'Order not found.' });
+        }
+
+        if (rows[0].order_status !== 'pending') {
+            await connection.rollback();
+            return res.status(400).json({
+                message: `Order is already '${rows[0].order_status}' and cannot be changed.`
+            });
+        }
+
+        await connection.query(
+            `UPDATE orders SET order_status = ? WHERE order_id = ? AND org_id = ?`,
+            [status, order_id, orgId]
+        );
+
+        // When cancelling: restore stock for every line item in the order (atomic, same tx)
+        if (status === 'cancelled') {
+            await connection.query(
+                `UPDATE products p
+                 JOIN order_items oi ON p.product_id = oi.product_id
+                 SET p.stock_quantity = p.stock_quantity + oi.quantity
+                 WHERE oi.order_id = ? AND p.org_id = ?`,
+                [order_id, orgId]
+            );
+        }
+
+        await connection.commit();
+        res.json({ order_id: Number(order_id), order_status: status });
+
+    } catch (error) {
+        await connection.rollback();
+        console.error('updateOrderStatus error:', error);
+        res.status(500).json({ message: 'Failed to update order status.' });
+    } finally {
+        connection.release();
     }
 };

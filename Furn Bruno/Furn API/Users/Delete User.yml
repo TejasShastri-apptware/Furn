@@ -5,7 +5,7 @@ info:
 
 http:
   method: DELETE
-  url: http://localhost:5000/api/users/org/1
+  url: http://localhost:5000/api/users/org/2
   headers:
     - name: x-org-id
       value: "1"

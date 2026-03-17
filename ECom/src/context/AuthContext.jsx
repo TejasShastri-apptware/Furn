@@ -9,6 +9,15 @@ export const useAuth = () => {
     return ctx;
 };
 
+// NOTES NOTES:
+// when a child component calls useAuth:
+// useAuth() returns { user, orgId, orgName, orgLoading, orgError, login, logout, isAdmin }
+// useAuth() -> useContext(AuthContext) -> AuthContext.Provider value
+
+// IMPORTANT : after login succeeds and setUser(userData) happens, react rerenders the entire provider
+// Because the value changed, every component using useAuth updates automatically
+
+
 export const AuthProvider = ({ children }) => {
     const ORG_SLUG = 'Furn';
 
@@ -23,10 +32,11 @@ export const AuthProvider = ({ children }) => {
 
     // Resolve org slug once on mount — always re-verify on fresh load
     useEffect(() => {
-        if (localStorage.getItem('org_id')) {
-            setOrgLoading(false);
-            return;
-        }
+        // if (localStorage.getItem('org_id')) {
+        //     setOrgLoading(false);
+        //     return;
+        // }
+        // NOTE - hard-coded slug for now
         fetch(`http://localhost:5000/api/orgs/resolve/${ORG_SLUG}`)
             .then(r => {
                 if (!r.ok) throw new Error(`Org resolve failed: ${r.status}`);
@@ -48,16 +58,7 @@ export const AuthProvider = ({ children }) => {
             .finally(() => setOrgLoading(false));
     }, []);
 
-    /**
-     * Login: fetches users scoped to the resolved org, then matches by email.
-     *
-     * Tenancy is enforced at two levels:
-     *   1. GET /users/org sends x-org-id, so the backend already filters by org.
-     *   2. We double-check match.org_id === resolved orgId as a belt-and-suspenders guard.
-     *
-     * Password is NOT verified against the DB (no /login endpoint yet).
-     * Returns { success: bool, user?, error? }
-     */
+    // returned value - { success: bool, user?, error? }
     const login = async (email, password) => {
         if (!email || !password) return { success: false, error: 'Email and password are required' };
 
@@ -68,17 +69,14 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
-            // Fetches only users belonging to currentOrgId (x-org-id header set by apiFetch)
-            const users = await apiFetch('/users/org');
+            // POST to backend — backend verifies email + password and scopes to org via x-org-id header
+            const data = await apiFetch('/users/login', {
+                method: 'POST',
+                body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+            });
 
-            const match = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+            const match = data.user;
 
-            if (!match) {
-                return { success: false, error: 'No account found with that email in this organization' };
-            }
-
-            // Belt-and-suspenders tenancy check:
-            // The backend already filtered by org, but verify the returned record agrees.
             if (String(match.org_id) !== String(currentOrgId)) {
                 console.error('[AuthContext] Tenancy mismatch — returned user org_id does not match resolved org_id');
                 return { success: false, error: 'Account does not belong to this organization' };
@@ -96,6 +94,9 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('auth_user', JSON.stringify(userData));
             setUser(userData);
 
+            // Signal other contexts (like CartContext) to refresh
+            window.dispatchEvent(new Event('auth:login'));
+
             console.log('[AuthContext] Logged in:', userData.email, '| role:', userData.role_name, '| org_id:', userData.org_id);
             return { success: true, user: userData };
         } catch (e) {
@@ -108,11 +109,11 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('user_id');
         localStorage.removeItem('auth_user');
         setUser(null);
+        // Signal other contexts (like CartContext) to reset
+        window.dispatchEvent(new Event('auth:logout'));
     };
 
-    // Admin = role 1 (Admin) or role 3 (Org_Level_Access) per the schema.
-    // Match against role_name strings from the DB join.
-    const isAdmin = user?.role_name === 'admin' || user?.role_name === 'Org_Level_Access' || user?.role_name === 'Dev';
+    const isAdmin = user?.role_name === 'admin' || user?.role_name === 'org_level_access' || user?.role_name === 'dev';
 
     return (
         <AuthContext.Provider value={{ user, orgId, orgName, orgLoading, orgError, login, logout, isAdmin }}>

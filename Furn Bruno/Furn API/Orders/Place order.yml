@@ -8,14 +8,14 @@ http:
   url: http://localhost:5000/api/orders/place
   headers:
     - name: x-org-id
-      value: "6"
+      value: "1"
     - name: x-user-id
-      value: "17"
+      value: "3"
   body:
     type: json
     data: |-
       {
-        "shipping_address_id": 1,
+        "shipping_address_id": 3,
         "payment_id": "PAY_TEST_001"
       }
   auth: inherit

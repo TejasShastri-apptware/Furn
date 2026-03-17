@@ -11,6 +11,7 @@ router.get("/details/:order_id", injectContext, orderController.getDetailedOrder
 
 // Admin scoped (org only)
 router.get("/org-all", injectContext, orderController.getAllOrdersByOrg);
+router.patch("/:order_id/status", injectContext, orderController.updateOrderStatus);
 
 // Global
 router.get("/global-all", orderController.getAllOrders);

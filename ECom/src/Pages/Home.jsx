@@ -15,7 +15,7 @@ export default function Home() {
                     alt="Hero"
                     className="h-full w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-black/30" />
+                <div className="absolute inset-0 bg-black/35" />
                 <div className="absolute inset-0 flex items-center justify-center text-center">
                     <div className="max-w-3xl px-4">
                         <h1 className="mb-6 font-serif text-5xl font-black tracking-tighter text-white sm:text-7xl">
@@ -44,29 +44,12 @@ export default function Home() {
             </section>
 
             {/* Featured Products */}
-            <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="mb-12 flex items-end justify-between">
-                    <div>
-                        <h2 className="text-3xl font-serif font-black tracking-tighter text-stone-900">Featured Pieces</h2>
-                        <p className="mt-2 text-stone-500">Selected for their exceptional design and craftsmanship.</p>
-                    </div>
-                    <Link to="/store/products" className="group flex items-center space-x-2 text-sm font-bold uppercase tracking-widest text-stone-900">
-                        <span>View All</span>
-                        <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-                    </Link>
-                </div>
-
-                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                    {featuredProducts.map((product) => (
-                        <ProductCard key={product.id} product={product} />
-                    ))}
-                </div>
-            </section>
+            
 
             {/* Category Section */}
-            <section className="bg-stone-100 py-24">
+            <section className="bg-stone-300 py-24">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <h2 className="mb-12 text-center text-3xl font-serif font-black tracking-tighter text-stone-900">Browse by Room</h2>
+                    <h2 className="mb-12 text-center text-3xl font-serif font-black tracking-tighter text-stone-900">Browse by Room(unimplemented)</h2>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                         {[
                             { name: 'Living Room', image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=800' },
