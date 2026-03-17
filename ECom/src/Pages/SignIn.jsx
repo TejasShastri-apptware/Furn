@@ -1,8 +1,16 @@
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react';
 import { apiFetch } from '../api/api';
+
+import { Listbox, Transition } from '@headlessui/react';
+
+
+const roles = [
+    { id: 2, name: 'Admin' },
+    { id: 3, name: 'Customer' },
+];
 
 export default function SignIn() {
     const { login, orgName, orgLoading } = useAuth();
@@ -18,7 +26,7 @@ export default function SignIn() {
     const [state, setState] = useState('');
     const [postalCode, setPostalCode] = useState('');
     const [country, setCountry] = useState('');
-    const [role, setRole] = useState('2');
+    const [role, setRole] = useState(roles[1]);
 
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
@@ -39,7 +47,7 @@ export default function SignIn() {
                         email: email.trim().toLowerCase(),
                         password_hash: password, // Plain text as per backend current state
                         phone,
-                        role,
+                        role_id: role.id,
                         address_line1: addressLine1,
                         city,
                         state,
@@ -210,7 +218,7 @@ export default function SignIn() {
                                             className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-stone-600 outline-none transition focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 text-sm"
                                         />
                                     </div>
-                                    <div>
+                                    {/* <div>
                                         <label className="block text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-1">Role</label>
                                         <select
                                             value={role}
@@ -221,7 +229,41 @@ export default function SignIn() {
                                             <option value="1">Admin</option>
                                             <option value="2">Customer</option>
                                         </select>
-                                    </div>
+                                    </div> */}
+
+                                    <div>
+  <label className="block text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-1">Role</label>
+  <Listbox value={role} onChange={setRole}>
+    <div className="relative">
+      <Listbox.Button className="w-full text-left rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white outline-none transition focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 text-sm cursor-pointer">
+        {role.name}
+      </Listbox.Button>
+
+      <Transition
+        as={Fragment}
+        leave="transition duration-100"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      >
+        <Listbox.Options className="absolute z-10 mt-2 w-full overflow-hidden rounded-xl border border-white/10 bg-stone-900 shadow-2xl backdrop-blur-xl">
+          {roles.map((r) => (
+            <Listbox.Option
+              key={r.id}
+              value={r}
+              className={({ active }) =>
+                `px-4 py-2.5 text-sm cursor-pointer transition-colors ${
+                  active ? 'bg-amber-500 text-stone-950 font-bold' : 'text-stone-300'
+                }`
+              }
+            >
+              {r.name}
+            </Listbox.Option>
+          ))}
+        </Listbox.Options>
+      </Transition>
+    </div>
+  </Listbox>
+</div>
                                 </div>
                             </div>
                         )}

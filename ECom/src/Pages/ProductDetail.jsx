@@ -45,7 +45,7 @@ export default function ProductDetail() {
                 ).slice(0, 4);
                 setRelated(rel);
             })
-            .catch(() => {}); // silently ignore related failure
+            .catch(() => { }); // silently ignore related failure
     }, [product]);
 
     const handleAddToCart = async () => {

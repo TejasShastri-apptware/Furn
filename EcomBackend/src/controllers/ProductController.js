@@ -40,10 +40,15 @@ exports.getAllProductsUnderOrg = async (req, res) => {
   try {
     const orgId = req.org_id;
     const [rows] = await pool.query(`
-      SELECT p.*, c.category_name 
+      SELECT p.*, c.category_name, 
+             GROUP_CONCAT(t.tag_name) AS tags,
+             GROUP_CONCAT(t.tag_id) AS tag_ids
       FROM products p
       JOIN categories c ON p.category_id = c.category_id
+      LEFT JOIN product_tags pt ON p.product_id = pt.product_id
+      LEFT JOIN tags t ON pt.tag_id = t.tag_id
       WHERE p.org_id = ? AND p.is_active = TRUE
+      GROUP BY p.product_id
       ORDER BY p.created_at DESC
     `, [orgId]);
     res.json(rows);
@@ -78,19 +83,20 @@ exports.getProductByTags = async (req, res) => {
     // FLOW : Join with protags -> filter by org_id -> group by Product id -> use having count
     const [rows] = await pool.query(
       `
-    Select p.product_id, p.name, p.price, p.image_url, c.category_name,
-    GROUP_CONCAT(t.tag_name) AS tags
-    FROM products p
-    JOIN categories c on p.category_id = c.category_id
-    JOIN product_tags pt ON p.product_id = pt.product_id
-    JOIN tags t ON pt.tag_id = t.tag_id
-    WHERE p.org_id = ?
-    AND p.is_active = TRUE AND pt.tag_id IN (?)
-    GROUP BY p.product_id
-    HAVING COUNT(distinct pt.tag_id) = ?
-    ORDER BY  p.created_at DESC
-    `, [orgId, tagIds, tagIds.length]
-    ); //GDamn
+      SELECT p.*, c.category_name, GROUP_CONCAT(t.tag_name) AS tags
+      FROM products p
+      JOIN categories c ON p.category_id = c.category_id
+      JOIN product_tags pt ON p.product_id = pt.product_id
+      JOIN tags t ON pt.tag_id = t.tag_id
+      WHERE p.org_id = ?
+        AND p.is_active = TRUE 
+        AND pt.tag_id IN (?)
+      GROUP BY p.product_id
+      HAVING COUNT(DISTINCT pt.tag_id) = ?
+      ORDER BY p.created_at DESC
+      `,
+      [orgId, tagIds, tagIds.length]
+    );
 
     res.json(rows);
   } catch (e) {
@@ -188,24 +194,59 @@ exports.createProductWithTags = async (req, res) => {
 
 
 exports.updateProduct = async (req, res) => {
+  const connection = await pool.getConnection();
   try {
+    await connection.beginTransaction();
+
     const orgId = req.org_id;
     const { id } = req.params;
-    const updateData = req.body;
+    const { tag_ids, ...updateData } = req.body;
 
     delete updateData.org_id;
     delete updateData.product_id;
 
-    const [result] = await pool.query(
+    // 1. Update product details
+    const [result] = await connection.query(
       "UPDATE products SET ? WHERE product_id = ? AND org_id = ?",
       [updateData, id, orgId]
     );
 
-    if (result.affectedRows === 0) return res.status(404).json({ message: "Product not found" });
-    res.json({ message: "Product updated successfully" });
+    if (result.affectedRows === 0) {
+      throw new Error("Product not found");
+    }
+
+    // 2. Sync Tags if tag_ids provided
+    if (tag_ids !== undefined) {
+      // Clear existing tags
+      await connection.query("DELETE FROM product_tags WHERE product_id = ?", [id]);
+
+      if (tag_ids && tag_ids.length > 0) {
+        // Verify tags belong to org
+        const [validTags] = await connection.query(
+          "SELECT tag_id FROM tags WHERE tag_id IN (?) AND org_id = ?",
+          [tag_ids, orgId]
+        );
+
+        if (validTags.length !== tag_ids.length) {
+          throw new Error("One or more Tag IDs are invalid or belong to another organization");
+        }
+
+        const tagRows = validTags.map(t => [id, t.tag_id]);
+        await connection.query(
+          "INSERT INTO product_tags (product_id, tag_id) VALUES ?",
+          [tagRows]
+        );
+      }
+    }
+
+    await connection.commit();
+    res.json({ message: "Product and tags updated successfully" });
   } catch (error) {
+    await connection.rollback();
     console.error("Error in updateProduct:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(error.message === "Product not found" ? 404 : 500).json({ message: error.message || "Server error" });
+  } finally {
+    connection.release();
   }
 };
 

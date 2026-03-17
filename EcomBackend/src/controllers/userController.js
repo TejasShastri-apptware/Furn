@@ -143,6 +143,7 @@ exports.createUser = async (req, res) => {
             address_line1, city, state, postal_code, country 
         } = req.body;
         const orgId = req.org_id;
+        console.log("user data received for registration : ", req.body);
 
         // 1. Format a single string for the users table "default_shipping_address"
         const fullAddressString = `${address_line1}, ${city}, ${postal_code}, ${country}`;

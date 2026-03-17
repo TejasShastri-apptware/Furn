@@ -27,6 +27,7 @@ function RecentOrdersTable({ orders }) {
         shipped: 'text-blue-400 bg-blue-400/10',
         cancelled: 'text-red-400 bg-red-400/10',
         refunded: 'text-stone-400 bg-stone-400/10',
+        completed: 'text-slate-800 bg-[#09eb6f]'
     };
 
     return (

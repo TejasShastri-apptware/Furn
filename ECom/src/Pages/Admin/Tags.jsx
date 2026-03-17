@@ -10,7 +10,7 @@ const PLACEHOLDER = 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w
 const TAG_TYPES = ['room', 'style', 'material', 'color', 'height', 'width', 'length', 'general'];
 
 // ─── Tag Detail Drawer ────────────────────────────────────────
-function TagDetailnDrawer({ tag, allProducts, onClose, onDeleted }) {
+function TagDetailDrawer({ tag, allProducts, onClose, onDeleted }) {
     const [confirm, setConfirm] = useState(false);
     const [toast, setToast] = useState(null);
 

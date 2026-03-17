@@ -113,7 +113,13 @@ function ProductForm({ form, setForm, categories, tags }) {
 function ProductDetailDrawer({ product: initial, categories, tags, onClose, onDeleted, onUpdated }) {
     const [product, setProduct] = useState(initial);
     const [editing, setEditing] = useState(false);
-    const [form, setForm] = useState({ ...initial, tag_ids: [] });
+    
+    // Parse tag_ids from DB (comma string) into numbers
+    const initialTagIds = initial.tag_ids 
+        ? String(initial.tag_ids).split(',').map(Number) 
+        : [];
+
+    const [form, setForm] = useState({ ...initial, tag_ids: initialTagIds });
     const [saving, setSaving] = useState(false);
     const [confirm, setConfirm] = useState(false);
     const [error, setError] = useState('');
@@ -133,6 +139,7 @@ function ProductDetailDrawer({ product: initial, categories, tags, onClose, onDe
                 height: form.height ? parseFloat(form.height) : null,
                 stock_quantity: parseInt(form.stock_quantity, 10),
                 category_id: parseInt(form.category_id, 10),
+                tag_ids: form.tag_ids || []
             };
             await apiFetch(`/products/${product.product_id}`, { method: 'PUT', body: JSON.stringify(payload) });
             const updatedProduct = { ...product, ...payload, category_name: categories.find(c => c.category_id === payload.category_id)?.category_name || product.category_name };
@@ -388,7 +395,8 @@ export default function ProductsPage() {
         .filter(p =>
             search === '' ||
             p.name.toLowerCase().includes(search.toLowerCase()) ||
-            (p.category_name || '').toLowerCase().includes(search.toLowerCase())
+            (p.category_name || '').toLowerCase().includes(search.toLowerCase()) ||
+            (p.tags || '').toLowerCase().includes(search.toLowerCase())
         );
 
     return (

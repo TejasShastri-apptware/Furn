@@ -91,7 +91,8 @@ export default function Products() {
             const matchSearch = !q ||
                 p.name.toLowerCase().includes(q) ||
                 (p.description || '').toLowerCase().includes(q) ||
-                (p.category_name || '').toLowerCase().includes(q);
+                (p.category_name || '').toLowerCase().includes(q) ||
+                (p.tags || '').toLowerCase().includes(q);
             const matchCategory = !selectedCategoryId || p.category_id === selectedCategoryId;
             return matchSearch && matchCategory;
         });
